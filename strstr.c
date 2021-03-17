@@ -24,20 +24,12 @@ char *my_strstr(char *input, char *pattern){
 }
 int main(){
 
-	char input[2049];
+	char src[2049];
 	char whole[3073];
-	char *whole_ptr;
-	char word[1024]; 
-	int word_len;
-	char *front_ptr;
-	int front_idx;
-	int back_idx;
+	char target[1024]; 
 
 	while(fgets(whole, 3073, stdin) != NULL){	
-			whole_ptr = whole;
-			while(fgets
-		while((front_idx=my_strstr(input, pattern)) != NULL){
-			front_idx = 	
-		}
+		sscanf(whole, "%[^,],%s", src, target);
+		printf("src:%s, target:%s\n", src, target);
 	}
 }
