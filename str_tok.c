@@ -23,7 +23,7 @@ int main(){
 char *get_term(char *src, char *term, char *delim){
 	char *ptr, *qtr;
 	ptr = src;
-
+		printf("Hello world\n");
 	//while(is_dilim(*ptr)) ptr ++;
 	while(is_delim(*ptr, delim) && *ptr) ptr++;
 	qtr = term;
