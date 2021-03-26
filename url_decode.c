@@ -6,7 +6,6 @@
 
 int main(){
 
-			puts("Hi there, this is git test.");
 	char line[MAX_LINE];
 	char *ptr, *qtr, *line_end;
 	char *last;
