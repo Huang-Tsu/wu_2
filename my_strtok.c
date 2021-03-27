@@ -19,52 +19,39 @@ int main(){
 		ptr = whole;
 		ptr = get_tok(ptr, token, delim);
 		printf("%s", token);
-		if(ptr == NULL){
-			puts("");
-			continue;
-		}
-		else{
-			while( (ptr=get_tok(ptr, token, delim))!=NULL){
+
+		while(ptr){
+			ptr=get_tok(ptr, token, delim);
+			if(strlen(token)!=0){
 				printf(",%s", token);
 			}
-			puts("");
 		}
+		puts("");
 	}
 }
+
 char *get_tok(char *src, char *token, char *delim){
 	char *ptr = src;
 	char *qtr = token;
+	char *target;
 	int delim_len = strlen(delim);
 	int src_len = strlen(src);	
-	char *end = src +src_len;
+	char *end = src+src_len;
 
-	while(ptr<end && strncmp(ptr, delim, delim_len)==0) ptr+=delim_len;
+	while(ptr+delim_len<=end && strncmp(ptr, delim, delim_len)==0) ptr+=delim_len;
 	
-	while(ptr<end && strncmp(ptr, delim, delim_len)!=0){
-		*qtr++ = *ptr++;
-	}
-	if(end-ptr<src_len && end-ptr!=0){
-		while(ptr<end){
-			*qtr++ = *ptr;	
+	if(target = strstr(ptr, delim)){
+		for(ptr; ptr<target; ){
+			*qtr++ = *ptr++;
 		}
-		return NULL;
-	}
-	else{
+		*qtr = '\0';
 		return ptr;
 	}
-	/*
-	for(int i=0; i<=src_len-delim_len+1; i++){
-		if(strncmp(ptr, delim, delim_len)!=0){
+	else{
+		for(ptr; ptr<end;){
 			*qtr++ = *ptr++;	
 		}
-		else{
-			ptr += delim_len;
-			while(src+src_len-ptr>=delim_len && strncmp(ptr, delim, delim_len)==0){
-				ptr += delim_len;
-			}
-			*qtr = '\0';
-			return ptr;
-		}
+		*qtr = '\0';
+		return NULL;
 	}
-	*/
 }
