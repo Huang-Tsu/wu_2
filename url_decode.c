@@ -19,7 +19,7 @@ int main(){
 	while(fgets(line, MAX_LINE, stdin) != NULL){
 		now = line;
 		output_ptr = output;
-		line_end = line+strlen(line);
+		line_end = strchr(line, '\0');
 		state = OK;
 
 		while((target=strchr(now, '%')) != NULL){
@@ -62,11 +62,10 @@ int main(){
 			answer = (hex1<<4) + hex2;
 			*output_ptr++ = answer;
 		}
-		while(now<=line_end){
-			*output_ptr++ = *now++;
-		}
-				
 		if(state == OK){
+			while(now<=line_end){
+				*output_ptr++ = *now++;
+			}
 			printf("%s", output);
 		}
 	}
