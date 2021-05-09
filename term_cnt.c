@@ -30,7 +30,7 @@ int main(){
 
 	while(fgets(input_word, 1025, stdin)!=NULL && !isspace(input_word[0])){
 		rm_new_line(input_word);
-		
+
 		ptr = input_word;
 		if(ptr[0]=='-'){
 			ptr ++;
@@ -61,7 +61,7 @@ int word_cnt(Term_cnt *now, char *input){
 	else{
 		word_cnt(now->next, input);
 	}
-	
+
 }
 inline void initialize_node(Term_cnt *node, char *input){
 	node->next = NULL;
