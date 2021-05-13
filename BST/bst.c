@@ -10,8 +10,8 @@ enum{
 	POST_ORDER
 };
 
-void add_node(Tree_node *root, char *input);
-void node_initialize(Tree_node *node, char *word);
+Tree_node *add_node(Tree_node *root, char *input);
+Tree_node *node_initialize(char *word);
 void tree_traversal(Tree_node *node ,int flag);
 
 struct Tree_node{
@@ -25,12 +25,9 @@ Tree_node *root;
 int main(int argc, char **argv){
 	char input[65];
 
-	root = (Tree_node*)calloc(1, sizeof(Tree_node));
-	scanf("%s", input);
-	node_initialize(root, input);
-
+	root = NULL;
 	while(scanf("%s", input) != EOF){
-		add_node(root, input);		
+		root = add_node(root, input);		
 	}
 
 	switch(argv[1][1]){
@@ -47,51 +44,48 @@ int main(int argc, char **argv){
 
 	return 0;
 }
-void add_node(Tree_node *node, char *input){
+Tree_node *add_node(Tree_node *node, char *input){
+	if(node == NULL){
+		node = node_initialize(input);
+		return node;
+	}
+
 	int return_value = strcmp(input, node->word);
 	if(return_value == 0)
-		return;
-	if(return_value < 0){
-		if(node->left == NULL){
-			node->left = (Tree_node*)calloc(1, sizeof(Tree_node));	
-			node_initialize(node->left, input);
-			return;
-		}
-		
-		add_node(node->left, input);
+		;	//do noting
+	else if(return_value < 0){
+		node->left = add_node(node->left, input);
 	}
 	else{
-		if(node->right == NULL){
-			node->right = (Tree_node*)calloc(1, sizeof(Tree_node));	
-			node_initialize(node->right, input);
-			return;
-		}
-		
-		add_node(node->right, input);
+		node->right = add_node(node->right, input);
 	}
+
+	return node;
 }
-void node_initialize(Tree_node *node, char *word){
-	strcpy(node->word, word);
-	node->left = NULL;
-	node->right = NULL;
+Tree_node *node_initialize(char *word){
+	Tree_node *new_node = (Tree_node*)calloc(1, sizeof(Tree_node));
+	strcpy(new_node->word, word);
+	new_node->left = new_node->right = NULL;
+	return new_node;
 }
 
 
 void tree_traversal(Tree_node *node, int flag){
+	if(node == NULL){
+		return;
+	}
+
 		if(flag == PRE_ORDER){
 			printf("%s\n", node->word);
 		}
-	if(node->left != NULL){
-		tree_traversal(node->left, flag);
-	}
+	tree_traversal(node->left, flag);
 		if(flag == IN_ORDER){
 			printf("%s\n", node->word);
 		}
-	if(node->right != NULL){
-		tree_traversal(node->right, flag);
-	}
+	tree_traversal(node->right, flag);
 		if(flag == POST_ORDER){
 			printf("%s\n", node->word);
 		}
+
 	free(node);
 }
