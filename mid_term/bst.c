@@ -1,25 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 typedef struct Tree_node Tree_node;
 
-enum{
-	PRE_ORDER,
-	IN_ORDER,
-	POST_ORDER
-};
-
-void rm_new_line(char *input);
-void add_node(Tree_node *root, char *input);
-void node_initialize(Tree_node *node, char *word);
-void tree_traversal(Tree_node *node);
 
 struct Tree_node{
 	char word[1025];
+	int cnt;
 	Tree_node *left;
 	Tree_node *right;
 };
+
+void rm_new_line(char *input);
+Tree_node *add_node(Tree_node *root, char *input);
+Tree_node *node_initialize(char *word);
+void tree_traversal(Tree_node *node);
 
 Tree_node *root;
 
@@ -27,46 +24,44 @@ int main(int argc, char **argv){
 	char input[1025];
 	int line_cnt = 0;
 
-	root = (Tree_node*)calloc(1, sizeof(Tree_node));
-	fgets(input, 1025, stdin);
-	rm_new_line(input);
-	node_initialize(root, input);
 
-	while(fgets(input, 1025, stdin) && line_cnt++<100){
+	while(fgets(input, 1025, stdin) != NULL && line_cnt<100){
+		if(isspace(*input))
+			continue;
 		rm_new_line(input);
-		add_node(root, input);		
+		root = add_node(root, input);		
+		line_cnt ++;
 	}
 
 	tree_traversal(root);
 
 	return 0;
 }
-void add_node(Tree_node *node, char *input){
-	int return_value = strcmp(input, node->word);
-	if(return_value == 0)
-		return;
-	if(return_value < 0){
-		if(node->left == NULL){
-			node->left = (Tree_node*)calloc(1, sizeof(Tree_node));
-			node_initialize(node->left, input);
-			return;
-		}
+Tree_node *add_node(Tree_node *node, char *input){
+	if(node == NULL){
+		node = node_initialize(input);
+		return node;
+	}
 
-		add_node(node->left, input);
+	int return_value = strcmp(input, node->word);
+	if(return_value == 0){
+		node->cnt ++;
+	}
+	else if(return_value < 0){
+		node->left = add_node(node->left, input);
 	}
 	else{
-		if(node->right == NULL){
-			node->right = (Tree_node*)calloc(1, sizeof(Tree_node));
-			node_initialize(node->right, input);
-			return;
-		}
-
-		add_node(node->right, input);
+		node->right = add_node(node->right, input);
 	}
+
+	return node;
 }
-void node_initialize(Tree_node *node, char *word){
-	strcpy(node->word, word);
-	node->left = node->right = NULL;
+Tree_node *node_initialize(char *word){
+	Tree_node *new_node = (Tree_node*)calloc(1, sizeof(Tree_node));
+	new_node->cnt = 1;
+	strcpy(new_node->word, word);
+	new_node->left = new_node->right = NULL;
+	return new_node;
 }
 
 
@@ -76,7 +71,9 @@ void tree_traversal(Tree_node *node){
 	}
 
 	tree_traversal(node->left);
-	printf("%s\n", node->word);
+	for(int i=0; i<node->cnt; i++){
+		printf("%s\n", node->word);
+	}
 	tree_traversal(node->right);
 
 	free(node);
