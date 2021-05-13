@@ -4,14 +4,18 @@
 
 typedef struct Tree_node Tree_node;
 
+enum{
+	PRE_ORDER,
+	IN_ORDER,
+	POST_ORDER
+};
+
 void add_node(Tree_node *root, char *input);
 void node_initialize(Tree_node *node, char *word);
-void pre_order_traversal(Tree_node *node);
-void in_order_traversal(Tree_node *node);
-void post_order_traversal(Tree_node *node);
+void tree_traversal(Tree_node *node ,int flag);
 
 struct Tree_node{
-	char *word;
+	char word[65];
 	Tree_node *left;
 	Tree_node *right;
 };
@@ -31,21 +35,20 @@ int main(int argc, char **argv){
 
 	switch(argv[1][1]){
 		case 'p':
-			pre_order_traversal(root);
+			tree_traversal(root, PRE_ORDER);
 			break;
 		case 'P':
-			post_order_traversal(root);
+			tree_traversal(root, POST_ORDER);
 			break;
 		case 'i':
-			in_order_traversal(root);
+			tree_traversal(root, IN_ORDER);
 			break;
 	}
 
-	free_tree(root);
-
+	return 0;
 }
 void add_node(Tree_node *node, char *input){
-	int return_value = strcmp(node->word, input);
+	int return_value = strcmp(input, node->word);
 	if(return_value == 0)
 		return;
 	if(return_value < 0){
@@ -66,8 +69,6 @@ void add_node(Tree_node *node, char *input){
 		
 		add_node(node->right, input);
 	}
-
-	add_node(node->next, input);
 }
 void node_initialize(Tree_node *node, char *word){
 	strcpy(node->word, word);
@@ -76,36 +77,21 @@ void node_initialize(Tree_node *node, char *word){
 }
 
 
-void pre_order_traversal(Tree_node *node){
-	if(node->next == NULL){
-		printf("%s\n", node->word);
-		free(node);
-		return;
+void tree_traversal(Tree_node *node, int flag){
+		if(flag == PRE_ORDER){
+			printf("%s\n", node->word);
+		}
+	if(node->left != NULL){
+		tree_traversal(node->left, flag);
 	}
-	printf("%s\n", node->word);
-	pre_order_traversal(node->left);
-	pre_order_traversal(node->right);
-	free(node);
-}
-void in_order_traversal(Tree_node *node){
-	if(node->next == NULL){
-		printf("%s\n", node->word);
-		free(node);
-		return;
+		if(flag == IN_ORDER){
+			printf("%s\n", node->word);
+		}
+	if(node->right != NULL){
+		tree_traversal(node->right, flag);
 	}
-	pre_order_traversal(node->left);
-	printf("%s\n", node->word);
-	pre_order_traversal(node->right);
-	free(node);
-}
-void post_order_traversal(Tree_node *node){
-	if(node->next == NULL){
-		printf("%s\n", node->word);
-		free(node);
-		return;
-	}
-	pre_order_traversal(node->left);
-	pre_order_traversal(node->right);
-	printf("%s\n", node->word);
+		if(flag == POST_ORDER){
+			printf("%s\n", node->word);
+		}
 	free(node);
 }
