@@ -26,9 +26,8 @@ int main(){
 	List *top = NULL;
 
 	while(scanf("%s", input) != EOF){
-		if(*input =='a' || *input == 'A'){	
+		if(*input == 'a' || *input == 'A'){	
 			top = insert_node(top, input);
-			
 		}
 	}
 
@@ -42,8 +41,9 @@ List *insert_node(List *node, char *word){
 	if(node == NULL){
 		node = node_initialize(word);
 		node_cnt ++;
+		return node;
 	}
-	else if(strcmp(node->word, word) == 0){
+	if(strcmp(node->word, word) == 0){
 		node->cnt ++;
 	}
 	else{
@@ -76,7 +76,7 @@ void find_largest(List *node){
 		largest = node;
 	}
 	else if(node->cnt == largest->cnt){
-		if(strcmp(node->word, largest->word) > 0){
+		if(strcmp(node->word, largest->word) < 0){
 			largest = node;
 		}
 	}
