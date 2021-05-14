@@ -68,20 +68,28 @@ void print_term_count(List *top, int node_cnt){
 	}
 }
 void find_largest(List *node){
-	if(node == NULL){
-		return;
-	}
-
-	if(node->cnt > largest->cnt){
-		largest = node;
-	}
-	else if(node->cnt == largest->cnt){
-		if(strcmp(node->word, largest->word) < 0){
-			largest = node;
+	List *ptr;
+	for(ptr=node; ptr!=NULL; ptr=ptr->next){
+		if(ptr->cnt > largest->cnt)
+			largest = ptr;
+		else if(ptr->cnt == largest->cnt){
+			if(strcmp(ptr->word, largest->word) < 0)
+				largest = ptr;
 		}
+	}
+/*
+	if(node == NULL)
+		return;
+
+	if(node->cnt > largest->cnt)
+		largest = node;
+	else if(node->cnt == largest->cnt){
+		if(strcmp(node->word, largest->word) < 0)
+			largest = node;
 	}
 
 	find_largest(node->next);
+*/
 }
 void free_linked_list(List *node){
 	if(node == NULL){
