@@ -18,6 +18,9 @@ struct Queue{
 	Queue *next;
 };
 
+	//for test
+	void tree_traversal(Tree_node *node);
+void rm_new_line(char *input);
 void free_tree(Tree_node *node);
 Tree_node *add_node(Tree_node *root, char *input);
 Tree_node *node_initialize(char *word);
@@ -27,19 +30,23 @@ Queue *en_queue(Queue *head, Tree_node *input);
 Queue *queue_initialize(Tree_node *input);
 Queue *de_queue(Queue *front);
 
+	Tree_node *root;
 
 int main(int argc, char **argv){
 	char input[2049];
-	Tree_node *root;
 
 
-	while(scanf("%s", input) != EOF){
+	while(fgets(input, 2049, stdin) != NULL){
+		rm_new_line(input);
 		if(isspace(*input))
 			continue;
-		root = add_node(root, input);		
+		root = add_node(root, input);
 	}
 
+	//tree_traversal(root);
 	level_order_traversal(root);
+
+	free_tree(root);
 
 	return 0;
 }
@@ -67,7 +74,6 @@ Tree_node *node_initialize(char *word){
 	Tree_node *new_node = (Tree_node*)calloc(1, sizeof(Tree_node));
 	strcpy(new_node->word, word);
 	new_node->left = new_node->right = NULL;
-		printf("node_left:%p\tnode_right:%p\n", new_node->left, new_node->right);
 	return new_node;
 }
 
@@ -76,23 +82,20 @@ Tree_node *node_initialize(char *word){
 
 void level_order_traversal(Tree_node *node){
 	Queue *front, *rear;
-	front = rear = queue_initialize(node);
-		printf("front:%p\trear:%p\n", front->tree_node, rear->tree_node);
+	Tree_node *ptr;
 
-	if(rear->tree_node->left)
-		rear = en_queue(rear, node->left);
-	if(rear->tree_node->right)
-		rear = en_queue(rear, node->right);
-	printf("%s\n", front->tree_node->word);
-	front = de_queue(front);
+	front = rear = queue_initialize(node);
 
 	while(front){
-			puts("hi");
-		if((rear->tree_node->left)!=NULL)
-			rear = en_queue(rear, rear->tree_node->left);
-		if(rear->tree_node->right)
-			rear = en_queue(rear, rear->tree_node->right);
+		ptr = front->tree_node;
+
+		if(ptr->left)
+			rear = en_queue(rear, ptr->left);
+		if(ptr->right)
+			rear = en_queue(rear, ptr->right);
+
 		printf("%s\n", front->tree_node->word);
+
 		front = de_queue(front);
 	}
 }
@@ -102,7 +105,6 @@ void free_tree(Tree_node *node){
 
 	free_tree(node->left);
 	free_tree(node->right);
-
 	free(node);
 }
 
@@ -121,9 +123,37 @@ Queue *de_queue(Queue *front){
 }
 Queue *queue_initialize(Tree_node *input){
 	Queue *new_node = (Queue*)calloc(1, sizeof(Queue));
+	if(!new_node){
+		puts("calloc failed!");
+		exit(1);
+	}
 	new_node->tree_node = input;
-		printf("tree_node:%p\tinput_node:%p\n", new_node->tree_node, input);
 	new_node->next = NULL;
 	return new_node;
 
+}
+
+
+
+void rm_new_line(char *input){
+	int end_idx = strlen(input);
+
+	if(input[end_idx-1] == '\n')
+		input[end_idx-1] = '\0';
+
+	return;
+}
+
+
+	//for test
+void tree_traversal(Tree_node *node){
+	if(node == NULL){
+		return;
+	}
+
+	tree_traversal(node->left);
+	printf("%s\n", node->word);
+	tree_traversal(node->right);
+
+	//free(node);
 }
