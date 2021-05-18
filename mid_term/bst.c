@@ -3,33 +3,33 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef struct Tree_node Tree_node;
+typedef struct TreeNode TreeNode;
 
 
-struct Tree_node{
+struct TreeNode{
 	char word[1025];
 	int cnt;
-	Tree_node *left;
-	Tree_node *right;
+	TreeNode *left;
+	TreeNode *right;
 };
 
 void rm_new_line(char *input);
-Tree_node *add_node(Tree_node *root, char *input);
-Tree_node *node_initialize(char *word);
-void tree_traversal(Tree_node *node);
+TreeNode *add_node(TreeNode *root, char *input);
+TreeNode *node_initialize(char *word);
+void tree_traversal(TreeNode *node);
 
-Tree_node *root;
 
 int main(int argc, char **argv){
 	char input[1025];
 	int line_cnt = 0;
+	TreeNode *root = NULL;
 
 
 	while(fgets(input, 1025, stdin) != NULL && line_cnt<100){
 		if(isspace(*input))
 			continue;
 		rm_new_line(input);
-		root = add_node(root, input);		
+		root = add_node(root, input);
 		line_cnt ++;
 	}
 
@@ -37,13 +37,15 @@ int main(int argc, char **argv){
 
 	return 0;
 }
-Tree_node *add_node(Tree_node *node, char *input){
+TreeNode *add_node(TreeNode *node, char *input){
 	if(node == NULL){
 		node = node_initialize(input);
 		return node;
 	}
 
-	int return_value = strcmp(input, node->word);
+	static int return_value;
+	return_value = strcmp(input, node->word);
+
 	if(return_value == 0){
 		node->cnt ++;
 	}
@@ -56,8 +58,9 @@ Tree_node *add_node(Tree_node *node, char *input){
 
 	return node;
 }
-Tree_node *node_initialize(char *word){
-	Tree_node *new_node = (Tree_node*)calloc(1, sizeof(Tree_node));
+TreeNode *node_initialize(char *word){
+	static TreeNode *new_node;
+	new_node = (TreeNode*)calloc(1, sizeof(TreeNode));
 	new_node->cnt = 1;
 	strcpy(new_node->word, word);
 	new_node->left = new_node->right = NULL;
@@ -65,7 +68,7 @@ Tree_node *node_initialize(char *word){
 }
 
 
-void tree_traversal(Tree_node *node){
+void tree_traversal(TreeNode *node){
 	if(node == NULL){
 		return;
 	}
@@ -79,7 +82,8 @@ void tree_traversal(Tree_node *node){
 	free(node);
 }
 void rm_new_line(char *input){
-	int end_idx = strlen(input);
+	static int end_idx;
+	end_idx = strlen(input);
 
 	if(input[end_idx-1] == '\n')
 		input[end_idx-1] = '\0';

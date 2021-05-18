@@ -30,10 +30,10 @@ Queue *en_queue(Queue *head, Tree_node *input);
 Queue *queue_initialize(Tree_node *input);
 Queue *de_queue(Queue *front);
 
-	Tree_node *root;
 
 int main(int argc, char **argv){
 	char input[2049];
+	Tree_node *root = NULL;
 
 
 	while(fgets(input, 2049, stdin) != NULL){
