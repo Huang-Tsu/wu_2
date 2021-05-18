@@ -26,8 +26,10 @@ void rm_new_line(char *input){
 	}
 }
 int is_palid(char *input){
-	int len = strlen(input);
-	for(int i=0, j=len-1; i<=j; i++, j--){
+	static int len, i, j;
+ 	len = strlen(input);
+	
+	for(i=0, j=len-1; i<=j; i++, j--){
 		if(input[i] != input[j]){
 			return NO;
 		}

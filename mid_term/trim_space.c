@@ -23,7 +23,8 @@ int main(){
 	return 0;
 }
 char *getword(char *ptr, char *word){
-	char *qtr = word;
+	static char *qtr;
+	qtr = word;
 
 	while(*ptr && isspace(*ptr)) 
 		ptr++;
