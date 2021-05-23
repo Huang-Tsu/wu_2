@@ -94,7 +94,7 @@ void print_level(Tree_node *node, int height_now){
 void level_order_traversal(Tree_node *node){
 	int tree_height = find_tree_height(node);
 	
-	for(int i=0; i<=tree_height; i++){
+	for(int i=0; i<tree_height; i++){
 		print_level(node, i);   //從第0層print到樹高, i代表要print的層數
 	}
 
