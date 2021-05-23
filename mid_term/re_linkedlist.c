@@ -13,21 +13,35 @@ struct List{
 List *insert_node(List *node, char *word);
 List *node_initialize(char *word);
 void print_re_linkedlist(List *node);
+void FreeList(List *node){
+	if(!node)
+		return;
+
+
+	FreeList(node->next);
+
+	free(node);
+
+	return;
+}
 
 
 int main(){
 	char input[1024];
 	List *top = NULL;
+		int cnt = 0;
 
 	while(scanf("%s", input) != EOF){
 		if(isspace(*input))
 			continue;	
 		top = insert_node(top, input);
+			cnt++;
+				printf("cnt:%d\n", cnt);
 	}
 
-	print_re_linkedlist(top->next);
-	printf("%s", top->word);
-	free(top);
+	//print_re_linkedlist(top->next);
+
+	FreeList(top);
 
 	return 0;
 }
