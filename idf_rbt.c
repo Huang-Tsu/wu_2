@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+	//int g_node_cnt;
+	//int g_free_cnt;
+	//int g_traversal_cnt;
 
 #define BLACK 1
 #define RED 0
@@ -25,23 +28,26 @@ void InsertRBTNode(char *input);
 void FixUpInsert(RBTNode *now);
 RBTNode *InitializeRBTNode(char *input);
 void FreeRBT(RBTNode *node);
-void FindLargest(RBTNode *node, RBTNode **largest);
+void FindLargest(RBTNode *node, RBTNode **largest, int *largest_cnt);
 void RBTRightRotation(RBTNode *node);
 void RBTLeftRotation(RBTNode *node);
 int IsLeftNode(RBTNode *node);
 void BackVisitedToZero(RBTNode *node);
 void Output();
 char *getword(char *ptr, char *word);
+	//void Traversal(RBTNode *node);
 
 int main(){
 	nil = (RBTNode*)calloc(1, sizeof(RBTNode));
 	nil->color = BLACK;
 	nil->parent = nil->left = nil->right = NULL;
+	root = nil;
 
 	BuildRBT();
 	
 	Output();
-			//Traversal(root);
+
+		//Traversal(root);	
 	FreeRBT(root);
 	free(nil);
 	//free(root);
@@ -50,15 +56,11 @@ int main(){
 	return 0;
 }
 void BuildRBT(){
-	char input[10001];
-	char word[10001];
+	char input[100001];
+	char word[100001];
 	char *ptr;
-	
-	scanf("%s", word);
-	root = InitializeRBTNode(word);
-	root->color = BLACK;
 
-	while(fgets(input, 10001 ,stdin)){
+	while(fgets(input, 100001 ,stdin)){
 		BackVisitedToZero(root);
 		ptr = input;
 
@@ -69,10 +71,15 @@ void BuildRBT(){
 }
 void InsertRBTNode(char *input){
 	static RBTNode *new_node;
-	new_node = InitializeRBTNode(input);
 	static RBTNode *current;
 	static RBTNode *pre;
 	static int return_value;
+	if(root == nil){
+		root = InitializeRBTNode(input);
+		root->color = BLACK;
+
+		return;
+	}
 	current = root;
 
 	while(current != nil){
@@ -84,7 +91,6 @@ void InsertRBTNode(char *input){
 				current->visited ++;
 				current->cnt ++;
 			}
-
 			return;
 		}
 		if(return_value < 0)
@@ -92,6 +98,8 @@ void InsertRBTNode(char *input){
 		else
 			current = current->right;
 	}
+
+	new_node = InitializeRBTNode(input);
 	new_node->parent = pre;
 
 	if(strcmp(input, pre->word) < 0){
@@ -152,6 +160,8 @@ void FixUpInsert(RBTNode *now){
 	root->color = BLACK;
 }
 RBTNode *InitializeRBTNode(char *input){
+		//g_node_cnt++;
+		//printf("node_cnt:%d\n", g_node_cnt);
 	static RBTNode *new_node;
 	new_node = (RBTNode*)calloc(1, sizeof(RBTNode));
 		if(!new_node){
@@ -176,16 +186,20 @@ void FreeRBT(RBTNode *node){
 
 	free(node->word);
 	free(node);
+		//g_free_cnt ++;
+		//printf("free cnt:%d\n", g_free_cnt);
+	return;
 }
-void FindLargest(RBTNode *node, RBTNode **largest){
+void FindLargest(RBTNode *node, RBTNode **largest, int *largest_cnt){
 	if(node == nil)
 		return;
 
-	FindLargest(node->left, largest);
-	if(node->cnt > (*largest)->cnt){
+	FindLargest(node->left, largest, largest_cnt);
+	if(node->cnt > *largest_cnt){
 		*largest = node;
+		*largest_cnt = node->cnt;
 	}
-	FindLargest(node->right, largest);
+	FindLargest(node->right, largest, largest_cnt);
 }
 void RBTRightRotation(RBTNode *node){
 	static RBTNode *old;
@@ -247,11 +261,12 @@ void BackVisitedToZero(RBTNode *node){
 }
 void Output(){
 	RBTNode *largest_node;
+	int largest_cnt;
 
 	for(int i=0; i<10; i++){
-		largest_node = root;
+		largest_cnt = 0;
 		
-		FindLargest(root, &largest_node);
+		FindLargest(root, &largest_node, &largest_cnt);
 
 		largest_node->cnt = -1;
 		printf("%s\n", largest_node->word);
@@ -274,13 +289,17 @@ char *getword(char *ptr, char *word){
 	
 	return ptr;
 }
-/*
+	/*
 	void Traversal(RBTNode *node){
 		if(node == nil)
 			return;
 
 		Traversal(node->left);
-		printf("%d\t%d\n", node->word, node->color);
+				printf("In traversal:%s\n", node->word);
 		Traversal(node->right);
+			//g_traversal_cnt ++;
+			//printf("traversal_cnt:%d\n", g_traversal_cnt);
+
+			
 	}
 	*/
