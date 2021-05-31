@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define BLACK 1
 #define RED 0
@@ -19,6 +20,18 @@ struct RBTNode{
 
 	static RBTNode *nil;
 	static RBTNode *root;
+void BuildRBT();
+void InsertRBTNode(char *input);
+void FixUpInsert(RBTNode *now);
+RBTNode *InitializeRBTNode(char *input);
+void FreeRBT(RBTNode *node);
+void FindLargest(RBTNode *node, RBTNode **largest);
+void RBTRightRotation(RBTNode *node);
+void RBTLeftRotation(RBTNode *node);
+int IsLeftNode(RBTNode *node);
+void BackVisitedToZero(RBTNode *node);
+void Output();
+char *getword(char *ptr, char *word);
 
 int main(){
 	nil = (RBTNode*)calloc(1, sizeof(RBTNode));
@@ -36,7 +49,7 @@ int main(){
 
 	return 0;
 }
-void BuildRBT(DataForProcess *insert){
+void BuildRBT(){
 	char input[10001];
 	char word[10001];
 	char *ptr;
@@ -139,7 +152,6 @@ void FixUpInsert(RBTNode *now){
 	root->color = BLACK;
 }
 RBTNode *InitializeRBTNode(char *input){
-			g_node_cnt ++;
 	static RBTNode *new_node;
 	new_node = (RBTNode*)calloc(1, sizeof(RBTNode));
 		if(!new_node){
@@ -162,17 +174,18 @@ void FreeRBT(RBTNode *node){
 	FreeRBT(node->left);
 	FreeRBT(node->right);
 
+	free(node->word);
 	free(node);
 }
 void FindLargest(RBTNode *node, RBTNode **largest){
 	if(node == nil)
 		return;
 
-	FindRBTNode(node->left, largest);
+	FindLargest(node->left, largest);
 	if(node->cnt > (*largest)->cnt){
 		*largest = node;
 	}
-	FindRBTNode(node->right, largest);
+	FindLargest(node->right, largest);
 }
 void RBTRightRotation(RBTNode *node){
 	static RBTNode *old;
@@ -224,7 +237,7 @@ int IsLeftNode(RBTNode *node){
 
 	return (node->parent->left == node)? 1 : 0;
 }
-void BackVisitedToZero(List *node){
+void BackVisitedToZero(RBTNode *node){
 	if(node == nil)
 		return;
 
@@ -232,7 +245,7 @@ void BackVisitedToZero(List *node){
 	BackVisitedToZero(node->left);
 	BackVisitedToZero(node->right);
 }
-void PrintResult(){
+void Output(){
 	RBTNode *largest_node;
 
 	for(int i=0; i<10; i++){
@@ -245,6 +258,23 @@ void PrintResult(){
 	}
 
 }
+char *getword(char *ptr, char *word){
+	char *qtr = word;
+
+	while(*ptr && isspace(*ptr))
+			ptr ++;
+
+	while(*ptr && !isspace(*ptr))
+		*qtr++ = *ptr++;
+
+	*qtr = '\0';
+
+	if(qtr == word)
+		return NULL;
+	
+	return ptr;
+}
+/*
 	void Traversal(RBTNode *node){
 		if(node == nil)
 			return;
@@ -253,3 +283,4 @@ void PrintResult(){
 		printf("%d\t%d\n", node->word, node->color);
 		Traversal(node->right);
 	}
+	*/
