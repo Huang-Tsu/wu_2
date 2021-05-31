@@ -21,11 +21,11 @@ char *getword(char *input, char *output);
 
 int main(){
 	List *head = NULL;
-	char input[10001];
-	char word[10001];
+	char input[100001];
+	char word[100001];
 	char *ptr;
 	
-	while(fgets(input, 10001 ,stdin)){
+	while(fgets(input, 100001 ,stdin)){
 		BackToZero(head);
 		ptr = input;
 
@@ -46,8 +46,10 @@ void InsertNode(List **node, char *word){
 
 	int return_value = strcmp(word, (*node)->word);
 	if(return_value == 0){
-		if((*node)->visited == 0)
+		if((*node)->visited == 0){
 			(*node)->cnt ++;
+			(*node)->visited = 1;
+		}
 
 		return;
 	}
