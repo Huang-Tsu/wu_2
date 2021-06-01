@@ -86,14 +86,11 @@ int main(){
 	char input_line[100001];
 	char word[100001];
 	char *ptr;
-	char *new_word[100000];	//紀錄這一行新增的字,插入tree時要用
-	int new_word_cnt;
 	int i;
-	HashTable *next_hash;	//free 時用的
-	
+	HashTable *next_hash_node;	//free 時用的
+
 	while(fgets(input_line, 100001 ,stdin)){
 		g_hash_node_idx_cnt = 0;
-		new_word_cnt = 0;
 		ptr = input_line;
 		g_table = (HashTable**)calloc(HASH_SIZE, sizeof(HashTable));
 
@@ -102,22 +99,20 @@ int main(){
 		while((ptr = getword(ptr, word)) != NULL){
 				//把get到的字放到hash table 如果已經存在就不放
 				//這一步可以篩選掉一行當中同樣的字
-			if(PushToHashTable(word)){		//push success:word did not exist in the hash table
-				new_word[new_word_cnt++] = strdup(word);
-			}
+			PushToHashTable(word);
 		}
-			//push words in the hash table to Red-Black Tree 
-		for(i=0; i<new_word_cnt; i++){
-			InsertRBTNode(new_word[i]);
-			free(new_word[i]);
-		}
-			//free table and words
-		for(i=0; i<g_hash_node_idx_cnt; i++){
-			while(g_table[g_hash_node_idx[i]]){	//走訪hash table的idx
-				next_hash = g_table[g_hash_node_idx[i]]->next;
+			//push words in the hash table to Red-Black Tree
+			//And free table and words
+		for(i=0; i<g_hash_node_idx_cnt; i++){		//走訪存有node的所有hash table 之 idx
+			while(g_table[g_hash_node_idx[i]]){		//走訪hash table idx上的所有node
+				next_hash_node = g_table[g_hash_node_idx[i]]->next;	
+
+				InsertRBTNode(g_table[g_hash_node_idx[i]]->word);
+
 				free(g_table[g_hash_node_idx[i]]->word);
 				free(g_table[g_hash_node_idx[i]]);
-				g_table[g_hash_node_idx[i]] = next_hash;
+
+				g_table[g_hash_node_idx[i]] = next_hash_node;
 			}
 		}
 
@@ -323,7 +318,7 @@ char *getword(char *ptr, char *word){
 
 	if(qtr == word)
 		return NULL;
-	
+
 	return ptr;
 }
 void PutWordsToArrayFromTree(RBTNode *node){
@@ -331,8 +326,8 @@ void PutWordsToArrayFromTree(RBTNode *node){
 		return;
 
 	PutWordsToArrayFromTree(node->left);
-	arr[g_word_cnt].word = strdup(node->word);  
-	arr[g_word_cnt].cnt = node->cnt;  
+	arr[g_word_cnt].word = strdup(node->word);
+	arr[g_word_cnt].cnt = node->cnt;
 	g_word_cnt ++;
 	PutWordsToArrayFromTree(node->right);
 }
@@ -348,7 +343,7 @@ int PushToHashTable(char *input){
 		for(ptr; ptr; ptr=ptr->next){
 			if(strcmp(ptr->word, input) == 0)
 				return 0;
-		
+
 			pre = ptr;
 		}
 		pre->next = InitializeHashNode(input);
@@ -360,8 +355,8 @@ HashTable *InitializeHashNode(char *input){
 	HashTable *new_node = (HashTable*)calloc(1, sizeof(HashTable));
 	new_node->word = strdup(input);
 	new_node->next = NULL;
-	
-	 return new_node;
+
+	return new_node;
 }
 int hash65(char *input){
 	unsigned int sum = 0;
