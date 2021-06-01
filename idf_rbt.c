@@ -1,73 +1,142 @@
+//一次讀一行
+    //把一行當中讀到的字放入hash table
+    //一樣的字只放一次
+    	//如此可以保證一行只會得到一個字一次
+
+    //把這行新得到的所有字放入RBT中
+    //如果有一樣的字就cnt++
+    //不一樣就建新的node
+
+    //全部讀取完後
+    //把RBT的字全部放到用struct 建立的arr中
+    //用qsort排序
+    //接著把前十個輸出就是答案
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-	//int g_node_cnt;
-	//int g_free_cnt;
-	//int g_traversal_cnt;
 
 #define BLACK 1
 #define RED 0
+#define NEW_TABLE_NODE 1
+#define HASH_SIZE 100000
+#define MAX_ARR_LEN 100000
 
 typedef struct RBTNode RBTNode;
+typedef struct HashTable HashTable;
+typedef struct List List;
 
+struct List{
+	char *word;
+	int cnt;
+};
+struct HashTable{
+	char *word;
+	HashTable *next;
+};
 struct RBTNode{
 	char *word;
 	int color;
-	int visited;
 	int cnt;
 	RBTNode *left;
 	RBTNode *right;
 	RBTNode *parent;
 };
 
-	static RBTNode *nil;
-	static RBTNode *root;
+
+	//for qsort()
+int compare(const void *a, const void *b);
+	//for hash structure
+int hash65(char *input);
+unsigned int my_pow(int input, int times);
+int PushToHashTable(char *input);
+HashTable *InitializeHashNode(char *input);
+	//for Red-Black Tree
 void BuildRBT();
 void InsertRBTNode(char *input);
 void FixUpInsert(RBTNode *now);
 RBTNode *InitializeRBTNode(char *input);
 void FreeRBT(RBTNode *node);
-void FindLargest(RBTNode *node, RBTNode **largest, int *largest_cnt);
 void RBTRightRotation(RBTNode *node);
 void RBTLeftRotation(RBTNode *node);
 int IsLeftNode(RBTNode *node);
-void BackVisitedToZero(RBTNode *node);
+	//general function
 void Output();
 char *getword(char *ptr, char *word);
-	//void Traversal(RBTNode *node);
+void PutWordsToArrayFromTree(RBTNode *node);
+
+		//hash
+	HashTable **g_table;	//table 是用來篩選掉同樣的字的
+	int g_hash_node_idx[HASH_SIZE]; //紀錄有用到hash table的那些index, free時要用
+	int g_hash_node_idx_cnt;
+		//Red-Black Tree
+	static RBTNode *nil;
+	static RBTNode *root;
+		//final result
+	List arr[MAX_ARR_LEN];
+	int g_word_cnt = 0;		//紀錄總共有幾個字, for qsort
 
 int main(){
+		//preparation for Red-Black Tree
 	nil = (RBTNode*)calloc(1, sizeof(RBTNode));
 	nil->color = BLACK;
 	nil->parent = nil->left = nil->right = NULL;
 	root = nil;
 
-	BuildRBT();
-	
-	Output();
-
-		//Traversal(root);	
-	FreeRBT(root);
-	free(nil);
-	//free(root);
-
-
-	return 0;
-}
-void BuildRBT(){
-	char input[100001];
+	char input_line[100001];
 	char word[100001];
 	char *ptr;
+	char *new_word[100000];	//紀錄這一行新增的字,插入tree時要用
+	int new_word_cnt;
+	int i;
+	HashTable *next_hash;	//free 時用的
+	
+	while(fgets(input_line, 100001 ,stdin)){
+		g_hash_node_idx_cnt = 0;
+		new_word_cnt = 0;
+		ptr = input_line;
+		g_table = (HashTable**)calloc(HASH_SIZE, sizeof(HashTable));
 
-	while(fgets(input, 100001 ,stdin)){
-		BackVisitedToZero(root);
-		ptr = input;
-
+			//push words get from line into the hash table
+			//same words will only be push once
 		while((ptr = getword(ptr, word)) != NULL){
-			InsertRBTNode(word);
+				//把get到的字放到hash table 如果已經存在就不放
+				//這一步可以篩選掉一行當中同樣的字
+			if(PushToHashTable(word)){		//push success:word did not exist in the hash table
+				new_word[new_word_cnt++] = strdup(word);
+			}
 		}
+			//push words in the hash table to Red-Black Tree 
+		for(i=0; i<new_word_cnt; i++){
+			InsertRBTNode(new_word[i]);
+			free(new_word[i]);
+		}
+			//free table and words
+		for(i=0; i<g_hash_node_idx_cnt; i++){
+			while(g_table[g_hash_node_idx[i]]){	//走訪hash table的idx
+				next_hash = g_table[g_hash_node_idx[i]]->next;
+				free(g_table[g_hash_node_idx[i]]->word);
+				free(g_table[g_hash_node_idx[i]]);
+				g_table[g_hash_node_idx[i]] = next_hash;
+			}
+		}
+
+		free(g_table);
 	}
+
+	PutWordsToArrayFromTree(root);
+
+	qsort(arr, g_word_cnt, sizeof(List), compare);
+
+	Output();
+
+	for(i=0; i<g_word_cnt; i++){
+		free(arr[i].word);
+	}
+	FreeRBT(root);
+	free(nil);
+
+	return 0;
 }
 void InsertRBTNode(char *input){
 	static RBTNode *new_node;
@@ -87,10 +156,7 @@ void InsertRBTNode(char *input){
 		return_value =strcmp(input, current->word);
 
 		if(return_value == 0){
-			if(current->visited == 0){
-				current->visited ++;
-				current->cnt ++;
-			}
+			current->cnt ++;
 			return;
 		}
 		if(return_value < 0)
@@ -160,7 +226,6 @@ void FixUpInsert(RBTNode *now){
 	root->color = BLACK;
 }
 RBTNode *InitializeRBTNode(char *input){
-		//g_node_cnt++;
 		//printf("node_cnt:%d\n", g_node_cnt);
 	static RBTNode *new_node;
 	new_node = (RBTNode*)calloc(1, sizeof(RBTNode));
@@ -170,7 +235,6 @@ RBTNode *InitializeRBTNode(char *input){
 		}
 
 	new_node->word = strdup(input);
-	new_node->visited = 1;
 	new_node->cnt = 1;
 	new_node->left = new_node->right = new_node->parent = nil;
 	new_node->color = RED;
@@ -189,17 +253,6 @@ void FreeRBT(RBTNode *node){
 		//g_free_cnt ++;
 		//printf("free cnt:%d\n", g_free_cnt);
 	return;
-}
-void FindLargest(RBTNode *node, RBTNode **largest, int *largest_cnt){
-	if(node == nil)
-		return;
-
-	FindLargest(node->left, largest, largest_cnt);
-	if(node->cnt > *largest_cnt){
-		*largest = node;
-		*largest_cnt = node->cnt;
-	}
-	FindLargest(node->right, largest, largest_cnt);
 }
 void RBTRightRotation(RBTNode *node){
 	static RBTNode *old;
@@ -251,27 +304,11 @@ int IsLeftNode(RBTNode *node){
 
 	return (node->parent->left == node)? 1 : 0;
 }
-void BackVisitedToZero(RBTNode *node){
-	if(node == nil)
-		return;
-
-	node->visited = 0;
-	BackVisitedToZero(node->left);
-	BackVisitedToZero(node->right);
-}
 void Output(){
-	RBTNode *largest_node;
-	int largest_cnt;
 
 	for(int i=0; i<10; i++){
-		largest_cnt = 0;
-		
-		FindLargest(root, &largest_node, &largest_cnt);
-
-		largest_node->cnt = -1;
-		printf("%s\n", largest_node->word);
+		printf("%s\n", arr[i].word);
 	}
-
 }
 char *getword(char *ptr, char *word){
 	char *qtr = word;
@@ -289,17 +326,70 @@ char *getword(char *ptr, char *word){
 	
 	return ptr;
 }
-	/*
-	void Traversal(RBTNode *node){
-		if(node == nil)
-			return;
+void PutWordsToArrayFromTree(RBTNode *node){
+	if(node == nil)
+		return;
 
-		Traversal(node->left);
-				printf("In traversal:%s\n", node->word);
-		Traversal(node->right);
-			//g_traversal_cnt ++;
-			//printf("traversal_cnt:%d\n", g_traversal_cnt);
-
-			
+	PutWordsToArrayFromTree(node->left);
+	arr[g_word_cnt].word = strdup(node->word);  
+	arr[g_word_cnt].cnt = node->cnt;  
+	g_word_cnt ++;
+	PutWordsToArrayFromTree(node->right);
+}
+int PushToHashTable(char *input){
+	int idx = hash65(input);
+	if(!g_table[idx]){
+		g_table[idx] = InitializeHashNode(input);
+		g_hash_node_idx[g_hash_node_idx_cnt++] = idx;
 	}
-	*/
+	else{
+		HashTable *ptr = g_table[idx];
+		HashTable *pre = ptr;
+		for(ptr; ptr; ptr=ptr->next){
+			if(strcmp(ptr->word, input) == 0)
+				return 0;
+		
+			pre = ptr;
+		}
+		pre->next = InitializeHashNode(input);
+	}
+
+	return NEW_TABLE_NODE;
+}
+HashTable *InitializeHashNode(char *input){
+	HashTable *new_node = (HashTable*)calloc(1, sizeof(HashTable));
+	new_node->word = strdup(input);
+	new_node->next = NULL;
+	
+	 return new_node;
+}
+int hash65(char *input){
+	unsigned int sum = 0;
+	int len = strlen(input);
+
+	for(int i=0; i<len; i++){
+		sum += input[i] * my_pow(65, len-1-i);
+	}
+
+	return sum%HASH_SIZE;
+}
+unsigned int my_pow(int input, int times){
+	if(times == 0){
+		return 1;
+	}
+	unsigned int result = 1;
+
+	for(int i=1; i<=times; i++){
+		result *= input;
+	}
+	return result;
+}
+int compare(const void *a, const void *b){
+	List *input1 = (List*)a;
+	List *input2 = (List*)b;
+	if(input1->cnt != input2->cnt)
+		return input2->cnt - input1->cnt;
+	else
+		return strcmp(input1->word, input2->word);
+
+}
