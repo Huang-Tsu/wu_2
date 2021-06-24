@@ -26,6 +26,7 @@ int main(int argc, char **argv){
 
 	lseek(fd, 0, SEEK_SET);			//回到起點
 	buffer = (char*)calloc(read_size+1, sizeof(char));
+	lseek(fd, 0, SEEK_SET);			//回到起頭
 
 	read(fd, buffer, read_size);
 	buffer[read_size] = '\0';
@@ -34,7 +35,6 @@ int main(int argc, char **argv){
 
 	Reverse(buffer);
 
-	lseek(fd, 0, SEEK_SET);			//回到起頭
 	write(fd, buffer, read_size);
 
 	close(fd);
