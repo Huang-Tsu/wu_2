@@ -63,7 +63,6 @@ int IsLeftNode(RBTNode *node);
 	//general function
 void Output();
 char *getword(char *ptr, char *word);
-void PutWordsToArrayFromTree(RBTNode *node);
 
 		//hash
 	HashTable **g_table;	//table 是用來篩選掉同樣的字的
@@ -73,7 +72,7 @@ void PutWordsToArrayFromTree(RBTNode *node);
 	static RBTNode *nil;
 	static RBTNode *root;
 		//final result
-	List arr[MAX_ARR_LEN];
+	RBTNode *arr[MAX_ARR_LEN];
 	int g_word_cnt = 0;		//紀錄總共有幾個字, for qsort
 
 int main(){
@@ -119,15 +118,10 @@ int main(){
 		free(g_table);
 	}
 
-	PutWordsToArrayFromTree(root);
-
-	qsort(arr, g_word_cnt, sizeof(List), compare);
+	qsort(arr, g_word_cnt, sizeof(RBTNode*), compare);
 
 	Output();
 
-	for(i=0; i<g_word_cnt; i++){
-		free(arr[i].word);
-	}
 	FreeRBT(root);
 	free(nil);
 
@@ -140,6 +134,7 @@ void InsertRBTNode(char *input){
 	static int return_value;
 	if(root == nil){
 		root = InitializeRBTNode(input);
+		arr[g_word_cnt++] = root;
 		root->color = BLACK;
 
 		return;
@@ -161,6 +156,7 @@ void InsertRBTNode(char *input){
 	}
 
 	new_node = InitializeRBTNode(input);
+	arr[g_word_cnt++] = new_node;
 	new_node->parent = pre;
 
 	if(strcmp(input, pre->word) < 0){
@@ -302,7 +298,7 @@ int IsLeftNode(RBTNode *node){
 void Output(){
 
 	for(int i=0; i<10; i++){
-		printf("%s\n", arr[i].word);
+		printf("%s\n", arr[i]->word);
 	}
 }
 char *getword(char *ptr, char *word){
@@ -320,16 +316,6 @@ char *getword(char *ptr, char *word){
 		return NULL;
 
 	return ptr;
-}
-void PutWordsToArrayFromTree(RBTNode *node){
-	if(node == nil)
-		return;
-
-	PutWordsToArrayFromTree(node->left);
-	arr[g_word_cnt].word = strdup(node->word);
-	arr[g_word_cnt].cnt = node->cnt;
-	g_word_cnt ++;
-	PutWordsToArrayFromTree(node->right);
 }
 int PushToHashTable(char *input){
 	int idx = hash65(input);
@@ -380,11 +366,11 @@ unsigned int my_pow(int input, int times){
 	return result;
 }
 int compare(const void *a, const void *b){
-	List *input1 = (List*)a;
-	List *input2 = (List*)b;
-	if(input1->cnt != input2->cnt)
-		return input2->cnt - input1->cnt;
+	RBTNode **input1 = (RBTNode**)a;
+	RBTNode **input2 = (RBTNode**)b;
+	if((*input1)->cnt != (*input2)->cnt)
+		return (*input2)->cnt - (*input1)->cnt;
 	else
-		return strcmp(input1->word, input2->word);
+		return strcmp((*input1)->word, (*input2)->word);
 
 }
